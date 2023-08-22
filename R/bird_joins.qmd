@@ -1,0 +1,86 @@
+---
+title: "Task 1: Bird Joins"
+author: "Heather Childers"
+format: html
+editor: visual
+execute: 
+  warning: false
+---
+
+## Task1: Bird Joins
+
+```{r}
+library(tidyverse)
+library(here)
+```
+
+```{r}
+bird_observations <- read_csv(here("data", "52_pp52_birds_1.csv"))
+sites <- read_csv(here("data", "52_pp52_sites_1.csv"))
+surveys <- read_csv(here("data", "52_pp52_surveys_1.csv"))
+taxalist <- read_csv(here("data", "52_pp52_taxalist_1.csv"))
+```
+
+```{r}
+bird_subset <- bird_observations %>% 
+  filter(species_id == "BHCO" | species_id == "RWBL") %>% 
+  filter(site_id == "LI-W" | site_id == "NU-C")
+
+```
+
+## Left join Practice
+
+```{r}
+birds_left <- left_join(bird_subset, surveys, by = "survey_id") 
+  left_join(bird_subset, taxalist, by = "species_id")
+```
+
+## Full Join Practice
+
+```{r}
+birds_full <- full_join(bird_subset, sites, by = "site_id")
+
+
+```
+
+## Data Wrangling
+
+```{r}
+birds <- bird_observations %>% 
+  rename(bird_obs_notes = notes)
+
+# survey_date <- surveys %>% 
+#   select("survey_date")
+# common_name <- taxalist %>% 
+#   select("common_name")
+# park_name <- sites %>% 
+#   select("park_name")
+# bird_count <- bird_observations %>% 
+#   select("bird_count")
+
+birds_site <- full_join(birds, sites, by = "site_id")
+birds_site_tax <- full_join(birds_site, taxalist, by = "species_id")
+birds_site_tax_survey <- full_join(surveys, birds_site_tax)
+
+new_birds <- birds_site_tax_survey %>% 
+  select(c("survey_date", "common_name","park_name", "bird_count" ))
+```
+
+```{r}
+
+bird_month <- new_birds %>% 
+  mutate(survey_month = lubridate::month(survey_date)) %>% 
+  mutate(factor_month = as.factor(survey_month)) %>% 
+  relocate("factor_month", .after = "survey_date") %>% 
+  group_by(park_name, survey_month) %>% 
+  summarize(bird_sight = n()) %>% 
+  filter(park_name == "Lindo" | park_name =="Orme"| park_name == "Palomino"|park_name == "Sonrisa")
+    
+    
+    
+    # park_name == "Lindo" | park_name =="Orme"| park_name == "Palomino"|park_name == "Sonrisa")
+
+
+```
+
+## 
